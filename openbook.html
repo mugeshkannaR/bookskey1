@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="css/openbook.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+</head>
+<body>
+    
+
+    <embed id="pdf-viewer" src="pdf/KESHAV ABSTRACT.pdf" type="application/pdf"  />
+    <br><button id="read-button">Read PDF</button>
+    <button id="stop-button">Stop Reading</button>
+<canvas id="pdf-canvas"></canvas>
+    
+    
+
+    <script>
+      // Load PDF.js and extract text
+      const url = 'pdf/KESHAV ABSTRACT.pdf'; // Replace with the path to your PDF file
+
+      // Function to extract text from PDF
+      function extractPDFText(pdf) {
+        const pagesPromises = [];
+        
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          pagesPromises.push(pdf.getPage(pageNumber).then(page => {
+            return page.getTextContent().then(textContent => {
+              return textContent.items.map(item => item.str).join(' ');
+            });
+          }));
+        }
+
+        return Promise.all(pagesPromises).then(pagesText => {
+          return pagesText.join('\n');
+        });
+      }
+
+      // Initialize PDF.js and extract text
+      let pdfText = '';
+
+      pdfjsLib.getDocument(url).promise.then(pdf => {
+        extractPDFText(pdf).then(text => {
+          pdfText = text; // Store extracted text for later use
+          console.log('Extracted PDF Text:', text);
+        });
+      });
+
+      // Text-to-Speech function
+      let speech; // Store the SpeechSynthesisUtterance object
+      function speakText(text) {
+        speech = new SpeechSynthesisUtterance();
+        speech.text = text;
+        speech.lang = 'en-US'; // You can set this to other languages if needed
+        speech.rate = 1; // Speed of the speech
+        window.speechSynthesis.speak(speech);
+      }
+
+      // Trigger Text-to-Speech on button click
+      document.getElementById('read-button').addEventListener('click', () => {
+        if (pdfText) {
+          speakText(pdfText); // Read the extracted text aloud
+        } else {
+          alert('PDF text is still loading. Please wait.');
+        }
+      });
+
+      // Stop Text-to-Speech on stop button click
+      document.getElementById('stop-button').addEventListener('click', () => {
+        window.speechSynthesis.cancel(); // Stops the speech
+      });
+    </script>
+
+</body>
+</html>
